@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 #coding: utf-8
 #
-# Ver: 0.04
+# Ver: 0.07
 # Date: 2020/02/17
 # Author: horimoto@holly-linux.com
 #
@@ -19,18 +19,36 @@ args = sys.argv
 if ( args[1] == '' ):
     quit()
 
+
+################################################################
+#
+#
+#
+################################################################
+
+fname ="/var/log/uecs/{0}".format(args[1])
+max_lines = sum(1 for line in open(fname))
+print("Filename={0}  Max Lines={1}".format(fname,max_lines))
+
 with get_connection() as db:
     with db.cursor() as cur:
-        fname ="/var/log/uecs/{0}".format(args[1])
-        print("Filename={0}".format(fname))
         lc = 1
         with open(fname,'r',encoding='utf_8') as f:
             for linebuf in f:
                 line = linebuf.strip()
+                if (line==''):
+                    print("NULL Line exception at {0}".format(lc))
+                    lc += 1
+                    continue
                 v = {}
                 (tod,xmline) = line.split(' ',1)
                 tod = tod.replace('-',' ')
-                root = ET.fromstring(xmline)
+                try:
+                    root = ET.fromstring(xmline)
+                except:
+                    print("XML Decode exception at {0}".format(lc))
+                    lc += 1
+                    continue
                 v['ver'] = root.attrib['ver']
                 for c1 in root:
                     sp = c1.tag
@@ -43,8 +61,8 @@ with get_connection() as db:
                 cur.execute('INSERT INTO t_data (TOD,VER,CCMTYPE,ROOM,REGION,ORD,PRIORITY,VALUE,IP) VALUES \
                 (%s,%s,%s,%s,%s,%s,%s,%s,%s)',(tod,v['ver'],v['type'],v['room'],v['region'],v['order'],\
                                                v['priority'],v['DATA'],v['IP'],))
-                lc = lc+1
-        db.commit()
-        cur.close()
-        print("\n{0} lines finish".format(lc))
-        quit()
+                if ((lc%1000)==0):
+                    print("Status={0:>5.1f}%".format((lc/max_lines)*100),end='\r')
+                lc += 1
+print("\n{0} lines finish".format(lc-1))
+quit()
