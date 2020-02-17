@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 #coding: utf-8
 #
-# Ver: 0.07
+# Ver: 0.08
 # Date: 2020/02/17
 # Author: horimoto@holly-linux.com
 #
@@ -41,7 +41,12 @@ with get_connection() as db:
                     lc += 1
                     continue
                 v = {}
-                (tod,xmline) = line.split(' ',1)
+                try:
+                    (tod,xmline) = line.split(' ',1)
+                except:
+                    print("\nSPLIT exception at {0}".format(lc))
+                    lc += 1
+                    continue
                 tod = tod.replace('-',' ')
                 try:
                     root = ET.fromstring(xmline)
