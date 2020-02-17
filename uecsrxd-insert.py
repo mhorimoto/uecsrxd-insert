@@ -26,10 +26,16 @@ with get_connection() as db:
         f = open(fname,'r')
         line = f.readline().strip()
         v = {}
+        lc = 1
         while line:
             (tod,xmline) = line.split(' ',1)
             tod = tod.replace('-',' ')
-            root = ET.fromstring(xmline)
+            print("{0} ".format(lc),end='\r')
+            try:
+                root = ET.fromstring(xmline)
+            except:
+                print("Error lc={0}".format(lc))
+
             v['ver'] = root.attrib['ver']
             for c1 in root:
                 sp = c1.tag
@@ -43,8 +49,9 @@ with get_connection() as db:
             (%s,%s,%s,%s,%s,%s,%s,%s,%s)',(tod,v['ver'],v['type'],v['room'],v['region'],v['order'],\
                                            v['priority'],v['DATA'],v['IP'],))
             line = f.readline().strip()
+            lc = lc+1
         f.close()
         db.commit()
         cur.close()
-        print("End")
+        print("\n{0} lines finish".format(lc))
         quit()
