@@ -1,10 +1,11 @@
 #! /usr/bin/env python3
 #coding: utf-8
 #
-# Ver: 0.01
+# Ver: 0.02
 # Date: 2020/02/16
 # Author: horimoto@holly-linux.com
 #
+import sys
 import datetime
 import time
 import configparser
@@ -14,15 +15,21 @@ import psycopg2
 def get_connection():
     return psycopg2.connect("user=uecs0 dbname=uecs0 password=UECS0")
 
+args = sys.argv
+if ( args[1] == '' ):
+    quit()
+
 with get_connection() as db:
     with db.cursor() as cur:
-
-        f = open('recvdata-sample.log','r')
+        fname ="/var/log/uecs/{0}".format(args[1])
+        print("Filename={0}".format(fname))
+        f = open(fname,'r')
         line = f.readline().strip()
         v = {}
-
+        print("Line={0}".format(line))
         while line:
             (tod,xmline) = line.split(' ',1)
+            print("XML={0}".format(xmline))
             tod = tod.replace('-',' ')
             root = ET.fromstring(xmline)
             v['ver'] = root.attrib['ver']
