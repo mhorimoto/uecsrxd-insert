@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 #coding: utf-8
 #
-# Ver: 0.02
-# Date: 2020/02/16
+# Ver: 0.03
+# Date: 2020/02/17
 # Author: horimoto@holly-linux.com
 #
 import sys
@@ -26,10 +26,8 @@ with get_connection() as db:
         f = open(fname,'r')
         line = f.readline().strip()
         v = {}
-        print("Line={0}".format(line))
         while line:
             (tod,xmline) = line.split(' ',1)
-            print("XML={0}".format(xmline))
             tod = tod.replace('-',' ')
             root = ET.fromstring(xmline)
             v['ver'] = root.attrib['ver']
@@ -44,8 +42,9 @@ with get_connection() as db:
             cur.execute('INSERT INTO t_data (TOD,VER,CCMTYPE,ROOM,REGION,ORD,PRIORITY,VALUE,IP) VALUES \
             (%s,%s,%s,%s,%s,%s,%s,%s,%s)',(tod,v['ver'],v['type'],v['room'],v['region'],v['order'],\
                                            v['priority'],v['DATA'],v['IP'],))
-            print(ptext)
             line = f.readline().strip()
         f.close()
         db.commit()
         cur.close()
+        print("End")
+        quit()
